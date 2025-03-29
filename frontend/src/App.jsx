@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Send, Plus, MenuIcon, Search, ChevronDown } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+import { Send, Plus, Search, ChevronDown } from "lucide-react";
 
 export default function App() {
   const [message, setMessage] = useState("");
@@ -56,130 +55,109 @@ export default function App() {
     }
   };
   
-  // Generate initial letter for avatar
-  const getInitial = () => {
-    return "R";
-  };
-
   return (
-    <div className="flex h-screen bg-gray-900 text-white">
-      {/* Sidebar */}
-      <div className="w-16 bg-gray-950 flex flex-col justify-between items-center py-5">
-        <div>
-          <button className="w-10 h-10 flex items-center justify-center">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="3" y="3" width="18" height="18" rx="2" stroke="white" strokeWidth="2"/>
-            </svg>
-          </button>
-        </div>
-        
-        <div className="flex flex-col items-center space-y-4">
-          <button className="w-10 h-10 flex items-center justify-center">
-            <div className="w-9 h-9 bg-orange-400 rounded-full flex items-center justify-center font-bold">
-              T
-            </div>
-          </button>
-          
-          <button className="w-10 h-10 flex items-center justify-center">
-            <Search className="text-white" size={22} />
-          </button>
-        </div>
-        
-        <div>
-          <button className="w-9 h-9 bg-gray-700 rounded-full flex items-center justify-center font-bold">
-            {getInitial()}
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col bg-gray-900">
-        {/* Fixed header */}
-        <div className="py-3 flex justify-center items-center gap-2 text-sm text-gray-400 border-b border-gray-800">
-          <span>AI Assistant</span>
-        </div>
-        
-        {/* Scrollable message area */}
-        <div className="flex-1 px-6 py-4 overflow-y-auto">
-          <div className="flex flex-col gap-8 max-w-3xl mx-auto">
-            {chats.length === 0 ? (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-gray-500 text-lg">No messages yet. Start a conversation!</p>
-              </div>
-            ) : (
-              chats.map((chat, index) => (
-                <div key={index} className="space-y-8">
-                  {/* User Message */}
-                  <div className="flex justify-end">
-                    <div className="bg-blue-600 px-4 py-2 rounded-xl rounded-tr-sm max-w-2xl">
-                      {chat.userMessage}
-                    </div>
-                  </div>
+    <div className="flex flex-col h-screen bg-black text-white">
+      {/* Main content area that takes up the whole screen */}
+      <div className="flex-1 flex flex-col items-center justify-center">
+        {chats.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full max-w-2xl px-4">
+            <h1 className="text-4xl font-semibold mb-20 text-center">What do you want to know?</h1>
+            <div className="w-full">
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  sendMessage();
+                }}
+                className="bg-[#1a1a1a] rounded-xl border border-gray-700 p-1 flex items-center w-full"
+              >
+                
+                <input
+                  type="text"
+                  placeholder="Ask anything..."
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className="flex-1 bg-transparent border-none outline-none px-2 py-2 text-white placeholder-gray-500"
+                />
+                <div className="flex items-center gap-1 px-2">
                   
-                  {/* AI Response */}
-                  <div className="flex gap-3">
-                    <div className="pt-1 flex-shrink-0">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="10" stroke="#FD8C73" strokeWidth="2"/>
-                        <path d="M8 12L16 12" stroke="#FD8C73" strokeWidth="2" strokeLinecap="round"/>
-                        <path d="M12 8L12 16" stroke="#FD8C73" strokeWidth="2" strokeLinecap="round"/>
-                      </svg>
+                  
+                  <button 
+                    type="submit" 
+                    disabled={loading || !message.trim()}
+                    className="w-8 h-8 rounded-full flex items-center justify-center bg-[#2a2a2a] hover:bg-gray-700 transition-colors"
+                  >
+                    <Send size={16} className="text-gray-300" />
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        ) : (
+          // Chat history and input when there are messages
+          <div className="flex flex-col w-full h-full">
+            {/* Chat messages */}
+            <div className="flex-1 overflow-y-auto px-4 py-6">
+              <div className="max-w-2xl mx-auto space-y-6">
+                {chats.map((chat, index) => (
+                  <div key={index} className="space-y-6">
+                    {/* User Message */}
+                    <div className="flex justify-end">
+                      <div className="bg-blue-600 px-4 py-2 rounded-lg max-w-md">
+                        {chat.userMessage}
+                      </div>
                     </div>
-                    <div className={`text-lg leading-relaxed ${
-                      chat.llmResponse === "..." ? "animate-pulse" : ""
-                      }`}>
-                      <ReactMarkdown>{chat.llmResponse}</ReactMarkdown>
+                    
+                    {/* AI Response */}
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                        AI
+                      </div>
+                      <div className={`text-gray-200 max-w-md ${
+                        chat.llmResponse === "..." ? "animate-pulse" : ""
+                        }`}>
+                        {chat.llmResponse}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
-            <div ref={messagesEndRef} />
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            </div>
+            
+            {/* Input area when there are messages */}
+            <div className="border-t border-gray-800 p-4">
+              <div className="max-w-2xl mx-auto">
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    sendMessage();
+                  }}
+                  className="bg-[#1a1a1a] rounded-xl border border-gray-700 p-1 flex items-center w-full"
+                >
+                  <div className="flex items-center px-2">
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Ask anything..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="flex-1 bg-transparent border-none outline-none px-2 py-2 text-white placeholder-gray-500"
+                  />
+                  <div className="flex items-center gap-1 px-2">
+                    
+                    <button 
+                      type="submit" 
+                      disabled={loading || !message.trim()}
+                      className="w-8 h-8 rounded-full flex items-center justify-center bg-[#2a2a2a] hover:bg-gray-700 transition-colors"
+                    >
+                      <Send size={16} className="text-gray-300" />
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* Fixed input area */}
-        <div className="px-5 py-4 border-t border-gray-800 bg-gray-900">
-          <form 
-            onSubmit={(e) => {
-              e.preventDefault();
-              sendMessage();
-            }}
-            className="flex items-center gap-3 bg-gray-800 rounded-lg px-4 py-3 max-w-3xl mx-auto"
-          >
-            <button 
-              type="button" 
-              className="text-gray-400 hover:text-gray-300 transition-colors"
-            >
-              <Plus size={20} />
-            </button>
-            
-            <input
-              type="text"
-              placeholder="Message Gemini..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
-              className="flex-1 bg-transparent border-none outline-none text-white placeholder-gray-500"
-            />
-            
-            <button 
-              type="submit" 
-              disabled={loading || !message.trim()}
-              className={`w-8 h-8 rounded flex items-center justify-center transition-colors ${
-                loading || !message.trim() 
-                  ? "bg-gray-600 cursor-not-allowed" 
-                  : "bg-orange-400 hover:bg-orange-500"
-              }`}
-            >
-              {loading ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Send size={16} className="text-white" />
-              )}
-            </button>
-          </form>
-        </div>
+        )}
       </div>
     </div>
   );
